@@ -1,4 +1,4 @@
-package com.jasongoodwin.monads;
+package com.chintootech.monads;
 
 import org.junit.Test;
 
@@ -8,19 +8,19 @@ import static org.junit.Assert.*;
 
 public class TryTest {
     @Test
-    public void itShouldBeSuccessOnSuccess() throws Throwable{
+    public void itShouldBeSuccessOnSuccess() throws Throwable {
         Try<String> t = Try.ofFailable(() -> "hey");
         assertTrue(t.isSuccess());
     }
 
     @Test
-    public void itShouldHoldValueOnSuccess() throws Throwable{
+    public void itShouldHoldValueOnSuccess() throws Throwable {
         Try<String> t = Try.ofFailable(() -> "hey");
         assertEquals("hey", t.get());
     }
 
     @Test
-    public void itShouldMapOnSuccess() throws Throwable{
+    public void itShouldMapOnSuccess() throws Throwable {
         Try<String> t = Try.ofFailable(() -> "hey");
         Try<Integer> intT = t.map((x) -> 5);
         intT.get();
@@ -42,17 +42,24 @@ public class TryTest {
     }
 
     @Test
+    public void itShouldReturnElseOnFailure() {
+        String t = Try.<String>ofFailable(() -> {
+            throw new IllegalArgumentException("e");
+        }).orElse("jude");
+        assertEquals("jude", t);
+    }
+
+    @Test
     public void itShouldReturnValueWhenRecoveringOnSuccess() {
         String t = Try.ofFailable(() -> "hey").recover((e) -> "jude");
         assertEquals("hey", t);
     }
 
-
     @Test
     public void itShouldReturnValueWhenRecoveringWithOnSuccess() throws Throwable {
         String t = Try.ofFailable(() -> "hey")
                 .recoverWith((x) ->
-                Try.ofFailable(() -> "Jude")
+                        Try.ofFailable(() -> "Jude")
                 ).get();
         assertEquals("hey", t);
     }
@@ -65,7 +72,7 @@ public class TryTest {
     }
 
     @Test
-    public void itShouldBeFailureOnFailure(){
+    public void itShouldBeFailureOnFailure() {
         Try<String> t = Try.ofFailable(() -> {
             throw new Exception("e");
         });
@@ -73,7 +80,7 @@ public class TryTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void itShouldThrowExceptionOnGetOfFailure() throws Throwable{
+    public void itShouldThrowExceptionOnGetOfFailure() throws Throwable {
         Try<String> t = Try.ofFailable(() -> {
             throw new IllegalArgumentException("e");
         });
@@ -81,7 +88,7 @@ public class TryTest {
     }
 
     @Test
-    public void itShouldMapOnFailure(){
+    public void itShouldMapOnFailure() {
         Try<String> t = Try.ofFailable(() -> {
             throw new Exception("e");
         }).map((x) -> "hey" + x);
@@ -90,7 +97,7 @@ public class TryTest {
     }
 
     @Test
-    public void itShouldFlatMapOnFailure(){
+    public void itShouldFlatMapOnFailure() {
         Try<String> t = Try.ofFailable(() -> {
             throw new Exception("e");
         }).flatMap((x) -> Try.ofFailable(() -> "hey"));
@@ -126,7 +133,7 @@ public class TryTest {
 
     @Test
     public void itShouldGetValue() throws Throwable {
-        final String result = Try.<String>ofFailable(() -> "test").getUnchecked();
+        final String result = Try.ofFailable(() -> "test").getUnchecked();
 
         assertEquals("test", result);
     }
@@ -148,14 +155,14 @@ public class TryTest {
             throw new Exception("oops");
         })
                 .recoverWith((x) ->
-                                Try.ofFailable(() -> "Jude")
+                        Try.ofFailable(() -> "Jude")
                 ).get();
         assertEquals("Jude", t);
     }
 
     @Test
     public void itShouldHandleComplexChaining() throws Throwable {
-        Try.ofFailable(() -> "1").<Integer>flatMap((x) -> Try.ofFailable(() -> Integer.valueOf(x))).recoverWith((t) -> Try.successful(1));
+        Try.ofFailable(() -> "1").flatMap((x) -> Try.ofFailable(() -> Integer.valueOf(x))).recoverWith((t) -> Try.successful(1));
     }
 
     @Test
@@ -168,17 +175,17 @@ public class TryTest {
             throw new RuntimeException();
         }).filter(o -> true);
 
-        assertEquals(t1.isSuccess(), false);
-        assertEquals(t2.isSuccess(), false);
+        assertFalse(t1.isSuccess());
+        assertFalse(t2.isSuccess());
     }
 
     @Test
     public void isShouldPassSuccessOnlyIfPredicateIsTrue() throws Throwable {
-        Try t1 = Try.<String>ofFailable(() -> "yo mama").filter(s -> s.length() > 0);
-        Try t2 = Try.<String>ofFailable(() -> "yo mama").filter(s -> s.length() < 0);
+        Try t1 = Try.ofFailable(() -> "yo mama").filter(s -> s.length() > 0);
+        Try t2 = Try.ofFailable(() -> "yo mama").filter(s -> s.length() < 0);
 
-        assertEquals(t1.isSuccess(), true);
-        assertEquals(t2.isSuccess(), false);
+        assertTrue(t1.isSuccess());
+        assertFalse(t2.isSuccess());
     }
 
     @Test
@@ -194,46 +201,46 @@ public class TryTest {
 
     @Test
     public void isShouldReturnTryValueWrappedInOptionalIfNonNullSuccess() throws Throwable {
-        Optional<String> opt1 = Try.<String>ofFailable(() -> "yo mama").toOptional();
+        Optional<String> opt1 = Try.ofFailable(() -> "yo mama").toOptional();
 
         assertTrue(opt1.isPresent());
     }
-    
+
     @Test(expected = IllegalArgumentException.class)
     public void itShouldThrowExceptionFromTryConsumerOnSuccessIfSuccess() throws Throwable {
         Try<String> t = Try.ofFailable(() -> "hey");
-      
+
         t.onSuccess(s -> {
-          throw new IllegalArgumentException("Should be thrown.");
+            throw new IllegalArgumentException("Should be thrown.");
         });
     }
-    
+
     @Test
     public void itShouldNotThrowExceptionFromTryConsumerOnSuccessIfFailure() throws Throwable {
         Try<String> t = Try.ofFailable(() -> {
             throw new IllegalArgumentException("Expected exception");
         });
-      
+
         t.onSuccess(s -> {
-          throw new IllegalArgumentException("Should NOT be thrown.");
+            throw new IllegalArgumentException("Should NOT be thrown.");
         });
     }
-    
+
     @Test
     public void itShouldNotThrowExceptionFromTryConsumerOnFailureIfSuccess() throws Throwable {
         Try<String> t = Try.ofFailable(() -> "hey");
-      
+
         t.onFailure(s -> {
-          throw new IllegalArgumentException("Should NOT be thrown.");
+            throw new IllegalArgumentException("Should NOT be thrown.");
         });
     }
-    
+
     @Test(expected = IllegalArgumentException.class)
     public void itShouldThrowExceptionFromTryConsumerOnFailureIfFailure() throws Throwable {
         Try<String> t = Try.ofFailable(() -> {
             throw new IllegalArgumentException("Expected exception");
         });
-      
+
         t.onFailure(s -> {
             throw new IllegalArgumentException("Should be thrown.");
         });
@@ -260,6 +267,4 @@ public class TryTest {
         assertEquals(result, "Ok");
     }
 
-
 }
-

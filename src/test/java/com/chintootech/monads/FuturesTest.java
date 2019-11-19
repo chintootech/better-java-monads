@@ -1,5 +1,6 @@
-package com.jasongoodwin.monads;
+package com.chintootech.monads;
 
+import com.chintootech.concurrent.Futures;
 import org.junit.Test;
 
 import java.util.List;
@@ -23,7 +24,7 @@ public class FuturesTest {
 
         //then we should get a future with a list
         List<Integer> collectedIntegers = Futures.sequence(futures).get();
-        assert(collectedIntegers.size() == size);
-        assert(list.get(5) == collectedIntegers.get(5));
+        assert (collectedIntegers.size() == size);
+        assert (list.get(5) == collectedIntegers.get(5));
     }
 }
